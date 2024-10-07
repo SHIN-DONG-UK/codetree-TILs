@@ -30,10 +30,10 @@ void input() {
 }
 
 void go(int idx, int sum) {
-  if (idx >= N) {
+  if (idx <= N-1) {
     if (sum > ans) ans = sum;
-    return;
   }
+  if (idx >= N) return;
 
   go(idx + 1, sum);
   go(idx + tasks[idx].t, sum + tasks[idx].p);
