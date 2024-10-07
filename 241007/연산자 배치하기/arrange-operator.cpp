@@ -1,65 +1,57 @@
 #include <iostream>
 #include <vector>
+#include <climits>
+#include <algorithm>
+
+#define MAX_NUM 11
+#define OPERATOR_NUM 3
+
 using namespace std;
 
-int N;
-int arr[11];
-vector<char> operators;
-int visited[10];
-int path[10];
-int sum;
-int min_val = 1e9;
-int max_val = -1e9;
+int n;
+int numbers[MAX_NUM];
+int operator_cnt[OPERATOR_NUM]; // 0: 덧셈, 1: 뺄셈, 2: 곱셈
+int min_val = INT_MAX, max_val = INT_MIN;
 
-void input();
-void go(int idx);
-
-int main() {
-    input();
-    go(0);
-    cout << min_val << ' ' << max_val << '\n';
+// 모든 연산자가 선택됐을 때 만들어진 식의 값을 반환합니다.
+int Calculate(int num1, int num2, int op) {
+    // 연산자를 순서대로 적용하여 결과 값을 계산합니다.
+    if(op == 0)
+        return num1 + num2;
+    else if(op == 1)
+        return num1 - num2;
+    else
+        return num1 * num2;
 }
 
-void input() {
-    cin >> N;
-    for (int i = 0; i < N; i++)
-    {
-        cin >> arr[i];
-    }
-    int a, b, c;
-    cin >> a >> b >> c;
-    for (int i = 0; i < a; i++)
-        operators.push_back('+');
-    for (int i = 0; i < b; i++)
-        operators.push_back('-');
-    for (int i = 0; i < c; i++)
-        operators.push_back('*');
-}
-
-void go(int idx) {
-    if (idx == N - 1) {
-        sum = arr[0];
-        for (int i = 0; i < N-1; i++)
-        {
-            if (operators[path[i]] == '+') {
-                sum += arr[i + 1];
-            }
-            else if (operators[path[i]] == '-') {
-                sum -= arr[i + 1];
-            }
-            else {
-                sum *= arr[i + 1];
-            }
-        }
-        if (min_val > sum) min_val = sum;
-        if (sum > max_val) max_val = sum;
+void FindMinAndMax(int cnt, int val) {
+    // 모든 연산자가 선택됐을 때 만들 수 있는 값으로 정답을 갱신해줍니다.
+    if(cnt == n - 1) {
+        min_val = min(min_val, val);
+        max_val = max(max_val, val);
         return;
     }
-    for (int i = 0; i < N - 1; i++) {
-        if (visited[i] == 1) continue;
-        visited[i] = 1;
-        path[idx] = i;
-        go(idx + 1);
-        visited[i] = 0;
+
+    // 사용 가능한 연산자의 후보들을 탐색합니다.
+    for(int i = 0; i < OPERATOR_NUM; i++) {
+        if(operator_cnt[i]) {
+            operator_cnt[i]--;
+            FindMinAndMax(cnt + 1, Calculate(val, numbers[cnt + 1], i));
+            operator_cnt[i]++;
+        }
     }
+}
+
+int main() {
+    cin >> n;
+    for(int i = 0; i < n; i++)
+        cin >> numbers[i];
+
+    for(int i = 0; i < OPERATOR_NUM; i++)
+        cin >> operator_cnt[i]; 
+
+    FindMinAndMax(0, numbers[0]);
+
+    cout << min_val << " " << max_val;
+    return 0;
 }
