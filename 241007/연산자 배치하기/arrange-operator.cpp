@@ -9,7 +9,7 @@ int visited[10];
 int path[10];
 int sum;
 int min_val = 1e9;
-int max_val = 0;
+int max_val = -1e9;
 
 void input();
 void go(int idx);
