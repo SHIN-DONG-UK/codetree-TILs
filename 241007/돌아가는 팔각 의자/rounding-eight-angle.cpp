@@ -71,6 +71,7 @@ void RotateEightChairs(Command cmd) {
 			tmp_d *= -1;
 			cmd_rot.push_back({ n - 1, tmp_d });
 		}
+		else break;
 	}
 	tmp_d = cmd.d;
 	for (int n = cmd.n; n <= 3; n++)
@@ -79,6 +80,7 @@ void RotateEightChairs(Command cmd) {
 			tmp_d *= -1;
 			cmd_rot.push_back({ n + 1, tmp_d });
 		}
+		else break;
 	}
 
 	for (int i = 0; i < cmd_rot.size(); i++)
