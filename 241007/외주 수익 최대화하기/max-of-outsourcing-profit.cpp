@@ -30,8 +30,12 @@ void input() {
 }
 
 void go(int idx, int sum) {
-  if (idx <= N) {
+  if (idx < N) {
     if (sum > ans) ans = sum;
+  }
+  else if (idx == N) {
+    if (sum > ans) ans = sum;
+    return;
   }
   if (idx > N) return;
 
