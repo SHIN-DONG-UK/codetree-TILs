@@ -25,21 +25,8 @@ int CalcSum(int idx, int head_y, int head_x);
 
 int main() {
 	Input();
-	//Simulation();
-	int tmp;
-	for (int t = 0; t < 4; t++)
-	{
-		RotateBlock(3);
-		for (int i = 0; i < n + 3; i++)
-		{
-			for (int j = 0; j < m + 3; j++)
-			{
-				tmp = CalcSum(3, i, j);
-				if (tmp > ans) ans = tmp;
-			}
-		}
-
-	}
+	Simulation();
+	
 	cout << ans << '\n';
 	return 0;
 }
