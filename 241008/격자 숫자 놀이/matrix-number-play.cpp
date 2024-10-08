@@ -47,13 +47,13 @@ void Input() {
 
 void Simulation() {
   int turn;
-  for (turn = 1; turn <= 100; turn++)
+  for (turn = 0; turn < 100; turn++)
   {
+    if (A[r - 1][c - 1] == k) break;
     Operate();
     //print();
-    if (A[r-1][c-1] == k) break;
   }
-  if (turn == 101) ans = -1;
+  if (turn == 100) ans = -1;
   else ans = turn;
 }
 
