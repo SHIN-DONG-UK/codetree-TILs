@@ -84,6 +84,10 @@ void Operate() {
       // 정렬 수행
       sort(sorting_map.begin(), sorting_map.end(), compare);
 
+      // 0으로 클리어
+      for (int j = 0; j < col_cnt; j++)
+        A[i][j] = 0;
+
       int len = 0;
       // 숫자 넣기
       for (int j = 0; j < sorting_map.size(); j++)
@@ -93,9 +97,7 @@ void Operate() {
         A[i][2 * j + 1] = sorting_map[j].second;
         len += 2;
       }
-      // *****시간복잡도 증가 부분
-      for (int j = sorting_map.size() * 2; j < 100; j++)
-        A[i][j] = 0;
+
       if (len > max_len) max_len = len;
     }
 
@@ -118,6 +120,10 @@ void Operate() {
       vector<pair<int, int>> sorting_map(cnt_map.begin(), cnt_map.end());
       // 정렬 수행
       sort(sorting_map.begin(), sorting_map.end(), compare);
+      
+      // 0으로 초기화
+      for (int i = 0; i < row_cnt; i++)
+        A[i][j] = 0;
 
       int len = 0;
       // 숫자 넣기
@@ -128,9 +134,6 @@ void Operate() {
         A[2 * i + 1][j] = sorting_map[i].second;
         len += 2;
       }
-      // *****시간복잡도 증가 부분
-      for (int i = sorting_map.size() * 2; i < 100; i++)
-        A[i][j] = 0;
       if (len > max_len) max_len = len;
     }
 
