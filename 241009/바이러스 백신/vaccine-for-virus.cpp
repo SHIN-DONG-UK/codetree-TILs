@@ -32,6 +32,7 @@ int main() {
 	GetCombinationAndRun(0, 0);
 
 	if (ans == 1e9) cout << "-1\n";
+	else if (ans == 0) cout << "0\n";
 	else cout << ans - 1 << '\n';
 	return 0;
 }
