@@ -33,6 +33,9 @@ void CopyTmptoMap(); // OK
 void AddParts(); // OK
 
 int main() {
+	ios::sync_with_stdio(false);
+	cin.tie(0); cout.tie(0);
+
 	Input();
 	Simulation();
 
@@ -65,10 +68,10 @@ void Simulation() {
 	{
 		value = FindMaxValueAndRemove();
 		if (value == 0) break;
-		AddParts();
 		value += ChainEffect();
+		if (value == 0) break;
 		if (value != 0) cout << value << ' ';
-		
+
 	}
 }
 
@@ -90,7 +93,7 @@ int FindThreeOver(Point sp) {
 			if (np.y < 0 || np.y >= MAX_MAP || np.x < 0 || np.x >= MAX_MAP) continue;
 			if (visited[np.y][np.x] == 1) continue;
 			if (tmp_map[sp.y][sp.x] != tmp_map[np.y][np.x]) continue;
-			
+
 			visited[np.y][np.x] = 1;
 			q.push(np);
 
@@ -199,16 +202,16 @@ int FindMaxValueAndRemove() {
 
 	for (int rot = 0; rot < 3; rot++)
 	{
-		for (int j = 1; j < MAX_MAP-1; j++)
+		for (int j = 1; j < MAX_MAP - 1; j++)
 		{
-			for (int i = 1; i < MAX_MAP-1; i++)
+			for (int i = 1; i < MAX_MAP - 1; i++)
 			{
 				memset(visited, 0, sizeof(visited));
 				int sum = 0;
 				int cnt;
 				CopyMaptoTmp();
 				RotateThreeByThree({ i,j }, rot);
-				
+
 				for (int a = 0; a < MAX_MAP; a++)
 				{
 					for (int b = 0; b < MAX_MAP; b++)
@@ -230,6 +233,8 @@ int FindMaxValueAndRemove() {
 		}
 	}
 
+	if (max_val == 0) return rst;
+
 	memset(visited, 0, sizeof(visited));
 	CopyMaptoTmp();
 	RotateThreeByThree({ max_i,max_j }, max_rot);
@@ -248,13 +253,13 @@ int FindMaxValueAndRemove() {
 			};
 		}
 	}
-	
+
 	for (int i = 0; i < start_points.size(); i++)
 	{
 		memset(visited, 0, sizeof(visited));
 		RemoveParts(start_points[i]);
 	}
-
+	AddParts();
 	return rst;
 }
 
@@ -271,14 +276,14 @@ void AddParts() {
 			}
 		}
 	}
-	
+
 }
 
 int ChainEffect() {
 	int rst = 0;
 	int cnt;
 	vector<Point> start_points;
-	
+
 	while (true) {
 		memset(visited, 0, sizeof(visited));
 		CopyMaptoTmp();
@@ -306,5 +311,6 @@ int ChainEffect() {
 			AddParts();
 		}
 	}
+
 	return rst;
 }
