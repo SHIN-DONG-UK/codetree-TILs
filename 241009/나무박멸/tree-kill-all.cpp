@@ -162,7 +162,7 @@ int FindMaxAndSpray() {
 			if (ny < 0 || ny >= n || nx < 0 || nx >= n) continue;
 			if (map[ny][nx] == -1) break;
 			if (map[ny][nx] == 0) {
-				//check[ny][nx] = c + 1;
+				check[ny][nx] = c + 1;
 				break;
 			}
 			rst += map[ny][nx];
