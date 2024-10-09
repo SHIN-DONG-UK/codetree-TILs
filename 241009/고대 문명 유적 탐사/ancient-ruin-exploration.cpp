@@ -64,6 +64,7 @@ void Simulation() {
 	for (int i = 0; i < k; i++)
 	{
 		value = FindMaxValueAndRemove();
+		if (value == 0) break;
 		AddParts();
 		value += ChainEffect();
 		if (value != 0) cout << value << ' ';
