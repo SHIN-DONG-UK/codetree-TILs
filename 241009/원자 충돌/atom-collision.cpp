@@ -23,11 +23,13 @@ vector<Atom> map_tmp[MAX_MAP][MAX_MAP];
 int N, M, K;
 
 void Input();
+void Simulation();
+
 void MoveAtoms();
 void MoveAtom(Point p); // -> map_tmp에 반영 // OK
-void AddAtoms(); // -> map에 반영
+bool AddAtoms(); // -> map에 반영
 int CalcMass();
-void Simulation();
+void CopyTmpToMap();
 
 int main() {
 	Input();
@@ -51,7 +53,8 @@ void Simulation() {
 	for (int i = 0; i < K; i++)
 	{
 		MoveAtoms();
-		AddAtoms();
+		if(!AddAtoms())
+			CopyTmpToMap();
 	}
 	cout << CalcMass() << '\n';
 }
@@ -86,12 +89,14 @@ void MoveAtom(Point p) {
 
 }
 
-void AddAtoms() {
+bool AddAtoms() {
+	bool rst = false;
 	for (int i = 0; i < N; i++)
 	{
 		for (int j = 0; j < N; j++)
 		{
 			if (map_tmp[i][j].size() <= 1) continue;
+			rst = true;
 			bool flag = true;
 
 			Atom atom = map_tmp[i][j].back();
@@ -131,6 +136,8 @@ void AddAtoms() {
 			}
 		}
 	}
+
+	return rst;
 }
 
 int CalcMass() {
@@ -148,4 +155,14 @@ int CalcMass() {
 		}
 	}
 	return rst;
+}
+
+void CopyTmpToMap() {
+	for (int i = 0; i < N; i++)
+	{
+		for (int j = 0; j < N; j++)
+		{
+			map[i][j] = map_tmp[i][j];
+		}
+	}
 }
