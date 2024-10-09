@@ -20,12 +20,12 @@ int map[MAX_MAP][MAX_MAP];
 int visited[MAX_MAP][MAX_MAP];
 vector<Point> hospitals;
 int path[MAX_VIRUS];
-int virus_cnt;
 int ans = 1e9;
 
 void Input();
 int RemoveVirus(int* arr, int len);
 void GetCombinationAndRun(int idx, int start);
+bool CheckVirus();
 
 int main() {
 	Input();
@@ -44,7 +44,6 @@ void Input() {
 		{
 			cin >> map[i][j];
 			if (map[i][j] == 2) hospitals.push_back({ i, j });
-			else if (map[i][j] == 0) virus_cnt++;
 		}
 	}
 }
@@ -52,8 +51,6 @@ void Input() {
 int RemoveVirus(int* arr, int len) {
 	memset(visited, 0, sizeof(visited));
 	int rst = 0;
-	if (virus_cnt == 0) return 1;
-	int tmp_virus_cnt = virus_cnt + hospitals.size() - m;
 
 	queue<Point> q;
 	for (int i = 0; i < len; i++) {
@@ -76,12 +73,10 @@ int RemoveVirus(int* arr, int len) {
 			q.push(np);
 
 			// 정답 제출용
-			tmp_virus_cnt--;
 			if (map[np.y][np.x] != 2 && visited[np.y][np.x] > rst) rst = visited[np.y][np.x];
 		}
 	}
-
-	if (tmp_virus_cnt != 0) return -1;
+	if (!CheckVirus()) return -1;
 	return rst;
 }
 
@@ -97,4 +92,15 @@ void GetCombinationAndRun(int idx, int start) {
 		path[idx] = i;
 		GetCombinationAndRun(idx + 1, i + 1);
 	}
+}
+
+bool CheckVirus() {
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = 0; j < n; j++)
+		{
+			if (map[i][j] == 0 && visited[i][j] == 0) return false;
+		}
+	}
+	return true;
 }
