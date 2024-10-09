@@ -68,8 +68,8 @@ void Simulation() {
 		AddParts();
 		value += ChainEffect();
 		if (value != 0) cout << value << ' ';
+		
 	}
-	cout << '\n';
 }
 
 int FindThreeOver(Point sp) {
