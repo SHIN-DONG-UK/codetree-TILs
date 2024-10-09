@@ -1,3 +1,9 @@
+// [오답노트]
+// map과 tmp_map 두 개를 사용해서 왔다갔다 하고 있다
+// 이 과정에서 tmp_map에 반영된 결과를 map에 업데이트하지 않거나, 그 반대의 경우 오답이 발생
+// 이 부분은 올해 상반기 1번 문제에서도 활용되었다
+// 따라서 둘 간의 업데이트가 예외가 없도록 주의해야 한다
+
 #include <iostream>
 #include <vector>
 
@@ -15,6 +21,7 @@ struct Atom {
 	int d;
 };
 
+// 상 우상 우 우하 하 좌하 좌 좌상
 int dy[8] = { -1,-1,0,1,1,1,0,-1 };
 int dx[8] = { 0,1,1,1,0,-1,-1,-1 };
 
@@ -27,9 +34,8 @@ void Simulation();
 
 void MoveAtoms();
 void MoveAtom(Point p); // -> map_tmp에 반영 // OK
-bool AddAtoms(); // -> map에 반영
+void AddAtoms(); // -> map에 반영
 int CalcMass();
-void CopyTmpToMap();
 
 int main() {
 	Input();
@@ -53,8 +59,7 @@ void Simulation() {
 	for (int i = 0; i < K; i++)
 	{
 		MoveAtoms();
-		if(!AddAtoms())
-			CopyTmpToMap();
+		AddAtoms();
 	}
 	cout << CalcMass() << '\n';
 }
@@ -83,61 +88,65 @@ void MoveAtom(Point p) {
 	{
 		atom = map[p.y][p.x].back();
 		map[p.y][p.x].pop_back();
-		np = { (p.y + dy[atom.d] * atom.s + N) % N, (p.x + dx[atom.d] * atom.s + N) % N};
+		np = { (p.y + dy[atom.d] * atom.s + 100*N) % N, (p.x + dx[atom.d] * atom.s + 100*N) % N};
 		map_tmp[np.y][np.x].push_back(atom);
 	}
 
 }
 
-bool AddAtoms() {
-	bool rst = false;
+void AddAtoms() {
 	for (int i = 0; i < N; i++)
 	{
 		for (int j = 0; j < N; j++)
 		{
-			if (map_tmp[i][j].size() <= 1) continue;
-			rst = true;
-			bool flag = true;
-
-			Atom atom = map_tmp[i][j].back();
-			map_tmp[i][j].pop_back();
-
-			int tar_m = atom.m;
-			int tar_s = atom.s;
-			int std_d = atom.d;
-
-			int len = map_tmp[i][j].size();
-
-			for (int k = len- 1; k >= 0; k--)
-			{
-				atom = map_tmp[i][j].back();
+			if (map_tmp[i][j].size() == 0) continue;
+			else if (map_tmp[i][j].size() == 1) {
+				Atom atom = map_tmp[i][j].back();
 				map_tmp[i][j].pop_back();
-
-				if (atom.d % 2 != std_d % 2)
-					flag = false;
-
-				tar_m += atom.m;
-				tar_s += atom.s;
-			}
-
-			tar_m /= 5;
-			if (tar_m == 0) continue; // 해당 합성은 종료되었음.
-			tar_s /= len + 1;
-
-			if (flag) {
-				// 상하좌우
-				for (int d = 0; d < 8; d+=2)
-					map[i][j].push_back({ tar_m, tar_s, d });
+				map[i][j].push_back(atom);
 			}
 			else {
-				// 대각선
-				for (int d = 0; d < 8; d += 2)
-					map[i][j].push_back({ tar_m, tar_s, d });
+				bool flag = true;
+
+				Atom atom = map_tmp[i][j].back();
+				map_tmp[i][j].pop_back();
+
+				int tar_m = atom.m;
+				int tar_s = atom.s;
+				int std_d = atom.d;
+
+				int len = map_tmp[i][j].size();
+
+				for (int k = len - 1; k >= 0; k--)
+				{
+					atom = map_tmp[i][j].back();
+					map_tmp[i][j].pop_back();
+
+					if (atom.d % 2 != std_d % 2)
+						flag = false;
+
+					tar_m += atom.m;
+					tar_s += atom.s;
+				}
+
+				tar_m /= 5;
+				if (tar_m == 0) continue; // 해당 합성은 종료되었음.
+				tar_s /= (len + 1);
+
+				if (flag) {
+					// 상하좌우
+					for (int d = 0; d < 8; d += 2)
+						map[i][j].push_back({ tar_m, tar_s, d });
+				}
+				else {
+					// 대각선
+					for (int d = 1; d < 8; d += 2)
+						map[i][j].push_back({ tar_m, tar_s, d });
+				}
 			}
+			
 		}
 	}
-
-	return rst;
 }
 
 int CalcMass() {
@@ -155,14 +164,4 @@ int CalcMass() {
 		}
 	}
 	return rst;
-}
-
-void CopyTmpToMap() {
-	for (int i = 0; i < N; i++)
-	{
-		for (int j = 0; j < N; j++)
-		{
-			map[i][j] = map_tmp[i][j];
-		}
-	}
 }
