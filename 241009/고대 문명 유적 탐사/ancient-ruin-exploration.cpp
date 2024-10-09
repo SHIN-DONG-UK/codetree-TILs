@@ -1,316 +1,171 @@
 #include <iostream>
 #include <queue>
-#include <cstring>
 
-#define MAX_MAP 5
+#define N_large 5 // 고대 문명 전체 격자 크기입니다.
+#define N_small 3 // 회전시킬 격자의 크기입니다.
+
 using namespace std;
 
-struct Point {
-	int y;
-	int x;
+// 고대 문명 격자를 정의합니다
+class Board {
+public:
+    int a[N_large][N_large];
+
+private:
+    // 주어진 y, x가 고대 문명 격자의 범위안에 있는지 확인하는 함수 입니다.
+    bool InRange(int y, int x){
+        return 0 <= y && y < N_large && 0 <= x && x < N_large;
+    }
+
+public:
+    // 생성자입니다. 격자에 유물조각들을 초기화 합니다.
+    Board()
+    {
+        for (int i=0;i<N_large;i++){
+            for (int j=0;j<N_large;j++){
+                a[i][j] = 0;
+            }
+        }
+    }
+
+    // 현재 격자에서 sy, sx를 좌측상단으로 하여 시계방향 90도 회전을 cnt번 시행했을때 결과를 return 합니다.
+    Board* Rotate(const int sy, const int sx, const int cnt) {
+        Board *result = new Board();
+        for (int i=0;i<N_large;i++){
+            for (int j=0;j<N_large;j++){
+                result->a[i][j] = a[i][j];
+            }
+        }
+        for (int k=0;k<cnt;k++){
+            // sy, sx를 좌측상단으로 하여 시계방향 90도 회전합니다.
+            int tmp = result->a[sy+0][sx+2];
+            result->a[sy+0][sx+2] = result->a[sy+0][sx+0];
+            result->a[sy+0][sx+0] = result->a[sy+2][sx+0];
+            result->a[sy+2][sx+0] = result->a[sy+2][sx+2];
+            result->a[sy+2][sx+2] = tmp;
+            tmp = result->a[sy+1][sx+2];
+            result->a[sy+1][sx+2] = result->a[sy+0][sx+1];
+            result->a[sy+0][sx+1] = result->a[sy+1][sx+0];
+            result->a[sy+1][sx+0] = result->a[sy+2][sx+1];
+            result->a[sy+2][sx+1] = tmp;
+        }
+        return result;
+    }
+    // 현재 격자에서 유물을 획득합니다.
+    // 새로운 유물 조각을 채우는것은 여기서 고려하지 않습니다.
+    int CalScore() {
+        int score = 0;
+        bool visit[N_large][N_large];
+        int dy[4] = {0,1,0,-1}, dx[4] = {1,0,-1,0};
+        for (int i=0;i<N_large;i++) {
+            for (int j=0;j<N_large;j++) {
+                visit[i][j] = false;
+            }
+        }
+
+        for (int i=0;i<N_large;i++) {
+            for (int j=0;j<N_large;j++) {
+                if (!visit[i][j]) {
+                    // BFS를 활용한 Flood Fill 알고리즘을 사용하여 visit 배열을 채웁니다.
+                    // 이때 trace 안에 조각들의 위치가 저장됩니다.
+                    queue<pair<int, int> > q, trace;
+                    q.push(make_pair(i, j));
+                    trace.push(make_pair(i, j));
+                    visit[i][j] = true;
+                    while (!q.empty()) {
+                        pair<int,int> cur = q.front();
+                        q.pop();
+                        for (int k=0;k<4;k++){
+                            int ny = cur.first+dy[k], nx=cur.second+dx[k];
+                            if (InRange(ny, nx) && a[ny][nx]==a[cur.first][cur.second] && (!visit[ny][nx])) {
+                                q.push(make_pair(ny, nx));
+                                trace.push(make_pair(ny, nx));
+                                visit[ny][nx] = true;
+                            }
+                        }
+                    }
+                    // 위에서 진행된 Flood Fill을 통해 조각들이 모여 유물이 되고 사라지는지 확인힙니다.
+                    if (trace.size() >= 3) {
+                        // 유물이 되어 사라지는 경우 가치를 더해주고 조각이 비어있음을 뜻하는 0으로 바꿔줍니다.
+                        score += trace.size();
+                        while (!trace.empty()) {
+                            pair<int,int> t = trace.front(); trace.pop();
+                            a[t.first][t.second] = 0;
+                        }
+                    }
+                }
+            }
+        }
+        return score;
+    }
+    // 유물 획득과정에서 조각이 비어있는 곳에 새로운 조각을 채워줍니다.
+    void Fill(queue<int> *que) {
+        // 열이 작고 행이 큰 우선순위로 채워줍니다.
+        for (int j=0;j<N_large;j++){
+            for (int i=N_large-1;i>=0;i--){
+                if (a[i][j] == 0) {
+                    a[i][j] = que->front();
+                    que->pop();
+                }
+            }
+        }
+    }
 };
 
-int dy[4] = { -1,1,0,0 };
-int dx[4] = { 0,0,-1,1 };
-
-int k, m;
-int map[MAX_MAP][MAX_MAP];
-int tmp_map[MAX_MAP][MAX_MAP];
-int visited[MAX_MAP][MAX_MAP];
-queue<int> wall;
-
-void Input(); // OK
-void Simulation();
-int FindMaxValueAndRemove(); // OK
-int ChainEffect(); // OK
-
-int FindThreeOver(Point sp); // OK
-void RemoveParts(Point sp); // OK
-void RotateThreeByThree(Point mp, int t); // OK
-void CopyMaptoTmp(); // OK
-void CopyTmptoMap(); // OK
-
-void AddParts(); // OK
-
 int main() {
-	ios::sync_with_stdio(false);
-	cin.tie(0); cout.tie(0);
+    int M, K;
+    queue<int> q;
+    Board *board = new Board();
 
-	Input();
-	Simulation();
+    // 입력을 받습니다.
+    cin >> K >> M;
+    for (int i=0;i<N_large;i++){
+        for (int j=0;j<N_large;j++){
+            cin >> board->a[i][j];
+        }
+    }
+    for (int i=0;i<M;i++){
+        int t;
+        cin >> t;
+        q.push(t);
+    }
 
-	return 0;
+    // 최대 K번의 탐사과정을 거칩니다.
+    while(K--) {
+        int maxScore = 0;
+        Board* maxScoreBoard = NULL;
+        // 회전 목표에 맞는 결과를 maxScoreBoard에 저장합니다.
+        // (1) 유물 1차 획득 가치를 최대화
+        // (2) 회전한 각도가 가장 작은 방법을 선택
+        // (3) 회전 중심 좌표의 열이 가장 작은 구간을, 그리고 열이 같다면 행이 가장 작은 구간을 선택
+        for (int cnt=1; cnt<=3; cnt++){
+            for (int sx=0;sx<=N_large-N_small;sx++) {
+                for (int sy=0;sy<=N_large-N_small;sy++) {
+                    Board *rotated = board->Rotate(sy, sx, cnt);
+                    int score = rotated->CalScore();
+                    if (maxScore < score) {
+                        maxScore = score;
+                        maxScoreBoard = rotated;
+                    }
+                }
+            }
+        }
+        // 회전을 통해 더 이상 유물을 획득할 수 없는 경우 탐사를 종료합니다.
+        if (maxScoreBoard == NULL) {
+            break;
+        }
+        board = maxScoreBoard;
+        // 유물의 연쇄 획득을 위해 유물 조각을 채우고 유물을 획득하는 과정을 더이상 획득할 수 있는 유물이 없을때까지 반복합니다.
+        while(true) {
+            board->Fill(&q);
+            int newScore = 0;
+            newScore = board->CalScore();
+            if (newScore == 0) break;
+            maxScore += newScore;
+        }
 
-}
+        cout << maxScore << " ";
+    }
 
-void Input() {
-	cin >> k >> m;
-	for (int i = 0; i < MAX_MAP; i++)
-	{
-		for (int j = 0; j < MAX_MAP; j++)
-		{
-			cin >> map[i][j];
-		}
-	}
-
-	int tmp;
-	for (int i = 0; i < m; i++)
-	{
-		cin >> tmp;
-		wall.push(tmp);
-	}
-
-}
-
-void Simulation() {
-	int value;
-	for (int i = 0; i < k; i++)
-	{
-		value = FindMaxValueAndRemove();
-		if (value == 0) break;
-		value += ChainEffect();
-		if (value == 0) break;
-		if (value != 0) cout << value << ' ';
-
-	}
-}
-
-int FindThreeOver(Point sp) {
-	int cnt = 0;
-	queue<Point> q;
-	q.push(sp);
-	visited[sp.y][sp.x] = 1;
-	cnt++;
-
-	Point cp, np;
-	while (!q.empty()) {
-		cp = q.front();
-		q.pop();
-
-		for (int d = 0; d < 4; d++)
-		{
-			np = { cp.y + dy[d], cp.x + dx[d] };
-			if (np.y < 0 || np.y >= MAX_MAP || np.x < 0 || np.x >= MAX_MAP) continue;
-			if (visited[np.y][np.x] == 1) continue;
-			if (tmp_map[sp.y][sp.x] != tmp_map[np.y][np.x]) continue;
-
-			visited[np.y][np.x] = 1;
-			q.push(np);
-
-			cnt++;
-		}
-	}
-
-	return cnt;
-}
-
-void RemoveParts(Point sp) {
-	queue<Point> q;
-	q.push(sp);
-	visited[sp.y][sp.x] = 1;
-
-	Point cp, np;
-	while (!q.empty()) {
-		cp = q.front();
-		q.pop();
-
-		for (int d = 0; d < 4; d++)
-		{
-			np = { cp.y + dy[d], cp.x + dx[d] };
-			if (np.y < 0 || np.y >= MAX_MAP || np.x < 0 || np.x >= MAX_MAP) continue;
-			if (visited[np.y][np.x] == 1) continue;
-			if (map[sp.y][sp.x] != map[np.y][np.x]) continue;
-
-			visited[np.y][np.x] = 1;
-			q.push(np);
-
-			map[np.y][np.x] = -1;
-		}
-	}
-	map[sp.y][sp.x] = -1;
-}
-
-void RotateThreeByThree(Point mp, int t) {
-	int B[3][3] = { 0, };
-	int std_y = mp.y - 1;
-	int std_x = mp.x - 1;
-
-	if (t == 0) {
-		for (int i = 0; i < 3; i++)
-		{
-			for (int j = 0; j < 3; j++)
-			{
-				B[i][j] = map[2 - j + std_y][i + std_x];
-			}
-		}
-	}
-	else if (t == 1) {
-		for (int i = 0; i < 3; i++)
-		{
-			for (int j = 0; j < 3; j++)
-			{
-				B[i][j] = map[2 - i + std_y][2 - j + std_x];
-			}
-		}
-	}
-	else {
-		for (int i = 0; i < 3; i++)
-		{
-			for (int j = 0; j < 3; j++)
-			{
-				B[i][j] = map[j + std_y][2 - i + std_x];
-			}
-		}
-	}
-
-	for (int i = 0; i < 3; i++)
-	{
-		for (int j = 0; j < 3; j++)
-		{
-			tmp_map[std_y + i][std_x + j] = B[i][j];
-		}
-	}
-}
-
-void CopyMaptoTmp() {
-	for (int i = 0; i < MAX_MAP; i++)
-	{
-		for (int j = 0; j < MAX_MAP; j++)
-		{
-			tmp_map[i][j] = map[i][j];
-		}
-	}
-}
-
-void CopyTmptoMap() {
-	for (int i = 0; i < MAX_MAP; i++)
-	{
-		for (int j = 0; j < MAX_MAP; j++)
-		{
-			map[i][j] = tmp_map[i][j];
-		}
-	}
-}
-
-int FindMaxValueAndRemove() {
-	int rst = 0;
-
-	int max_val = 0;
-	int max_rot = 0;
-	int max_j = -1;
-	int max_i = -1;
-
-	for (int rot = 0; rot < 3; rot++)
-	{
-		for (int j = 1; j < MAX_MAP - 1; j++)
-		{
-			for (int i = 1; i < MAX_MAP - 1; i++)
-			{
-				memset(visited, 0, sizeof(visited));
-				int sum = 0;
-				int cnt;
-				CopyMaptoTmp();
-				RotateThreeByThree({ i,j }, rot);
-
-				for (int a = 0; a < MAX_MAP; a++)
-				{
-					for (int b = 0; b < MAX_MAP; b++)
-					{
-						if (visited[a][b] == 1) continue;
-						cnt = FindThreeOver({ a,b });
-						if (cnt < 3) continue;
-						sum += cnt;
-					}
-				}
-				// 현재 탐사에서 유물수 sum
-				if (sum > max_val) {
-					max_val = sum;
-					max_rot = rot;
-					max_j = j;
-					max_i = i;
-				}
-			}
-		}
-	}
-
-	if (max_val == 0) return rst;
-
-	memset(visited, 0, sizeof(visited));
-	CopyMaptoTmp();
-	RotateThreeByThree({ max_i,max_j }, max_rot);
-	CopyTmptoMap();
-	vector<Point> start_points;
-	int cnt;
-	for (int a = 0; a < MAX_MAP; a++)
-	{
-		for (int b = 0; b < MAX_MAP; b++)
-		{
-			if (visited[a][b] == 1) continue;
-			cnt = FindThreeOver({ a,b });
-			if (cnt >= 3) {
-				start_points.push_back({ a,b });
-				rst += cnt;
-			};
-		}
-	}
-
-	for (int i = 0; i < start_points.size(); i++)
-	{
-		memset(visited, 0, sizeof(visited));
-		RemoveParts(start_points[i]);
-	}
-	AddParts();
-	return rst;
-}
-
-void AddParts() {
-	int part;
-	for (int j = 0; j < MAX_MAP; j++)
-	{
-		for (int i = MAX_MAP - 1; i >= 0; i--)
-		{
-			if (map[i][j] == -1) {
-				part = wall.front();
-				wall.pop();
-				map[i][j] = part;
-			}
-		}
-	}
-
-}
-
-int ChainEffect() {
-	int rst = 0;
-	int cnt;
-	vector<Point> start_points;
-
-	while (true) {
-		memset(visited, 0, sizeof(visited));
-		CopyMaptoTmp();
-		start_points.clear();
-
-		for (int a = 0; a < MAX_MAP; a++)
-		{
-			for (int b = 0; b < MAX_MAP; b++)
-			{
-				if (visited[a][b] == 1) continue;
-				cnt = FindThreeOver({ a,b });
-				if (cnt < 3) continue;
-				rst += cnt;
-				start_points.push_back({ a, b });
-			}
-		}
-
-		if (start_points.size() == 0) break;
-		else {
-			for (int i = 0; i < start_points.size(); i++)
-			{
-				memset(visited, 0, sizeof(visited));
-				RemoveParts(start_points[i]);
-			}
-			AddParts();
-		}
-	}
-
-	return rst;
+    return 0;
 }
