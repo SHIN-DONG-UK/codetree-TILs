@@ -1,143 +1,145 @@
 #include <iostream>
+#include <utility>
+#include <tuple>
 #include <queue>
-#include <cstring>
 
-#define MAX_MAP 20
+#define MAX_N 20
+#define FACE_NUM 6
+#define DIR_NUM 4
+#define OUT_OF_GRID make_pair(-1, -1)
+
 using namespace std;
 
-struct Point {
-	int y;
-	int x;
-};
-
-// 상우하좌 - 시계방향
-int dy[4] = { -1,0,1,0 };
-int dx[4] = { 0,1,0,-1 };
-
 int n, m;
-int map[MAX_MAP][MAX_MAP];
-int visited[MAX_MAP][MAX_MAP];
-// 주사위 아랫면 == dice[2][1]
-int dice[4][3] = {
-	{0,1,0},
-	{0,5,0},
-	{4,6,3},
-	{0,2,0}
-};
+
+// 현재 위치와 방향을 기록합니다. (시작은 오른쪽)
+int x, y;
+int move_dir;
+
+// 방향은 오른쪽, 아래, 왼쪽, 위 순입니다.
+// 시계방향, 반시계방향 회전을 용이하게 하기 위한 순서로 정의합니다.
+int dx[DIR_NUM] = {0, 1,  0, -1};
+int dy[DIR_NUM] = {1, 0, -1,  0};
+
+int grid[MAX_N][MAX_N];
+
+// bfs 진행을 위해 필요한 값들입니다.
+
+queue<pair<int, int> > bfs_q;
+bool visited[MAX_N][MAX_N];
+
+// 주사위가 놓여있는 상태 
+int u = 1, f = 2, r = 3;
 
 int ans;
 
-void Input();
-void Simulation();
-void RollingDice(int dir); 
-int CalcScore(Point sp);
+// 격자 안에 있는지를 확인합니다.
+bool InRange(int x, int y) {
+    return 0 <= x && x < n && 0 <= y && y < n;
+}
+
+// 동일한 숫자에 대해서만 이동이 가능합니다.
+bool CanGo(int x, int y, int target_num) {
+    return InRange(x, y) && !visited[x][y] && grid[x][y] == target_num;
+}
+
+int BFS(int x, int y, int target_num) {
+    // visited 값을 초기화합니다.
+    for(int i = 0; i < n; i++)
+        for(int j = 0; j < n; j++)
+            visited[i][j] = false;
+
+    // 시작점을 표시합니다.
+    visited[x][y] = true;
+    bfs_q.push(make_pair(x, y));
+
+    int score = 0;
+
+    // BFS 탐색을 수행합니다.
+    while(!bfs_q.empty()) {
+        pair<int, int> curr_pos = bfs_q.front();
+        int curr_x, curr_y;
+        tie(curr_x, curr_y) = curr_pos;
+        bfs_q.pop();
+        score += target_num;
+
+        for(int i = 0; i < DIR_NUM; i++) {
+            int new_x = curr_x + dx[i];
+            int new_y = curr_y + dy[i];
+
+            if(CanGo(new_x, new_y, target_num)) {
+                bfs_q.push(make_pair(new_x, new_y));
+                visited[new_x][new_y] = true;
+            }
+        }
+    }
+
+    return score;
+}
+
+// 현재 위치를 기준으로 했을 때의 점수를 계산합니다.
+int GetScore() {
+    return BFS(x, y, grid[x][y]);
+}
+
+// 해당 방향으로 이동했을 때의 다음 위치를 구합니다.
+// 이동이 불가능할 경우 OUT_OF_GRID를 반환합니다.
+pair<int, int> NextPos() {
+	int nx = x + dx[move_dir], ny = y + dy[move_dir];
+	if(InRange(nx, ny))
+		return make_pair(nx, ny);
+	else
+		return OUT_OF_GRID;
+}
+
+void Simulate() {
+    // 현재 방향으로 굴렸을 때의 격자상의 위치를 구합니다.
+    pair<int, int> next_pos = NextPos();
+
+    // 격자를 벗어난다면, 방향을 반대로 튼 이후의 격자를 구합니다.
+    if(next_pos == OUT_OF_GRID) {
+        move_dir = (move_dir < 2) ? (move_dir + 2) : (move_dir - 2);
+        next_pos = NextPos();
+    }
+    
+    // 위치를 이동합니다.
+    tie(x, y) = next_pos;
+
+    // 점수를 더해줍니다.
+    ans += GetScore();
+    
+    // 주사위가 놓여있는 상태를 조정합니다.
+    if(move_dir == 0) // 오른쪽
+        tie(u, f, r) = make_tuple(7 - r, f, u);
+    else if(move_dir == 1) // 아래쪽
+        tie(u, f, r) = make_tuple(7 - f, u, r);
+    else if(move_dir == 2) // 왼쪽
+        tie(u, f, r) = make_tuple(r, f, 7 - u);
+    else if(move_dir == 3) // 위쪽
+        tie(u, f, r) = make_tuple(f, 7 - u, r);
+    
+    // 주사위의 바닥면에 적혀있는 숫자와, 격자 숫자를 비교합니다.
+    int bottom = 7 - u;
+    // 주사위에 적힌 숫자가 더 크면 시계방향으로 90' 회전합니다.
+    if(bottom > grid[x][y])
+        move_dir = (move_dir + 1) % 4;
+    // 주사위에 적힌 숫자가 더 작으면 반시계방향으로 90' 회전합니다.
+    else if(bottom < grid[x][y])
+        move_dir = (move_dir - 1 + 4) % 4;
+}
 
 int main() {
-	Input();
-	Simulation();
-	cout << ans << '\n';
-	return 0;
-}
-
-void Input() {
-	cin >> n >> m;
-	for (int i = 0; i < n; i++)
-	{
-		for (int j = 0; j < n; j++)
-		{
-			cin >> map[i][j];
-		}
-	}
-}
-
-void Simulation() {
-	Point p = { 0,0 };
-	int dir = 1;
-
-	for (int i = 0; i < m; i++)
-	{
-		RollingDice(dir);
-		p = { p.y + dy[dir], p.x + dx[dir] };
-
-		// 1. 맵 밖으로 간 경우 : 반대방향으로 향하고 한 칸 전진
-		if (p.y < 0 || p.y >= n || p.x < 0 || p.x >= n) {
-			p = { p.y - 2 * dy[dir], p.x - 2 * dx[dir] };
-			dir = (dir + 2 + 4) % 4;
-			RollingDice(dir); // 굴렸던거 원복
-		}
-		// 2. 아닌 경우 : dir 업데이트
-		else {
-			if (dice[2][1] > map[p.y][p.x]) dir = (dir + 4 + 1) % 4; // 시계 90도
-			else if (dice[2][1] < map[p.y][p.x]) dir = (dir + 4 - 1) % 4; // 반시계 90도
-			// 같으면 그냥 전진
-		}
-
-		ans += CalcScore(p);
-	}
-}
-
-void RollingDice(int dir) {
-	int tmp;
-	// 상
-	if (dir == 0) {
-		tmp = dice[3][1];
-		dice[3][1] = dice[2][1];
-		dice[2][1] = dice[1][1];
-		dice[1][1] = dice[0][1];
-		dice[0][1] = tmp;
-	}
-	// 우
-	else if (dir == 1) {
-		tmp = dice[2][2];
-		dice[2][2] = dice[0][1];
-		dice[0][1] = dice[2][0];
-		dice[2][0] = dice[2][1];
-		dice[2][1] = tmp;
-	}
-	// 하
-	else if (dir == 2) {
-		tmp = dice[0][1];
-		dice[0][1] = dice[1][1];
-		dice[1][1] = dice[2][1];
-		dice[2][1] = dice[3][1];
-		dice[3][1] = tmp;
-	}
-	// 좌
-	else {
-		tmp = dice[2][0];
-		dice[2][0] = dice[0][1];
-		dice[0][1] = dice[2][2];
-		dice[2][2] = dice[2][1];
-		dice[2][1] = tmp;
-	}
-}
-
-int CalcScore(Point sp) {
-	memset(visited, 0, sizeof(visited));
-	int rst = map[sp.y][sp.x];
-
-	queue<Point> q;
-	q.push(sp);
-	visited[sp.y][sp.x] = 1;
-
-	Point cp, np;
-	while (!q.empty()) {
-		cp = q.front();
-		q.pop();
-
-		for (int d = 0; d < 4; d++)
-		{
-			np = { cp.y + dy[d], cp.x + dx[d] };
-			if (np.y < 0 || np.y >= n || np.x < 0 || np.x >= n) continue;
-			if (visited[np.y][np.x] == 1) continue;
-			if (map[np.y][np.x] != map[sp.y][sp.x]) continue;
-
-			visited[np.y][np.x] = 1;
-			q.push(np);
-
-			rst += map[np.y][np.x];
-		}
-	}
-
-	return rst;
+    // 입력:
+    cin >> n >> m;
+    for(int i = 0; i < n; i++)
+        for(int j = 0; j < n; j++)
+            cin >> grid[i][j];
+    
+    // 시뮬레이션 진행
+    while(m--)
+        Simulate();
+    
+    // 점수 출력
+    cout << ans;
+    return 0;
 }
