@@ -69,8 +69,8 @@ void Simulation() {
 		}
 		// 2. 아닌 경우 : dir 업데이트
 		else {
-			if (dice[2][1] > map[p.y][p.x]) dir = (dir + 4 + 1) % 4;
-			else if (dice[2][1] < map[p.y][p.x]) dir = (dir + 4 - 1) % 4;
+			if (dice[2][1] > map[p.y][p.x]) dir = (dir + 4 + 1) % 4; // 시계 90도
+			else if (dice[2][1] < map[p.y][p.x]) dir = (dir + 4 - 1) % 4; // 반시계 90도
 			// 같으면 그냥 전진
 		}
 
