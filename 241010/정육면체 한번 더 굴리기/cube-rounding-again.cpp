@@ -35,7 +35,6 @@ int CalcScore(Point sp);
 int main() {
 	Input();
 	Simulation();
-
 	cout << ans << '\n';
 	return 0;
 }
@@ -64,8 +63,7 @@ void Simulation() {
 		if (p.y < 0 || p.y >= n || p.x < 0 || p.x >= n) {
 			p = { p.y - 2 * dy[dir], p.x - 2 * dx[dir] };
 			dir = (dir + 2 + 4) % 4;
-			RollingDice(dir);
-			RollingDice(dir);
+			RollingDice(dir); // 굴렸던거 원복
 		}
 		// 2. 아닌 경우 : dir 업데이트
 		else {
