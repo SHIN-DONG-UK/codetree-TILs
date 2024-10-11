@@ -10,7 +10,7 @@
 #define LEFT 3
 using namespace std;
 
-struct Soul{
+struct Soul {
 	int y;
 	int x;
 	int now_golem;
@@ -67,14 +67,14 @@ void Simulation() {
 	{
 		Golem golem = MoveGolem(golems[i], num);
 
-		//print();
+		print();
 
 		if (golem.y != -1) {
 			memset(visited, 0, sizeof(visited));
 
 			MoveSoul(golem);
-			
-			//print_visited();
+
+			print_visited();
 
 			ans += CalcSoul();
 
@@ -98,22 +98,21 @@ void MoveSoul(Golem golem) {
 
 		for (int d = 0; d < 4; d++)
 		{
-			next = { cur.y + dy[d], cur.x + dx[d] };
+			next = { cur.y + dy[d], cur.x + dx[d], cur.now_golem};
 			if (next.y <= 0 || next.y > R || next.x <= 0 || next.x > C) continue;
 			if (visited[next.y][next.x] > 0) continue;
 			if (map[next.y][next.x] == 0) continue;
-			if (map[next.y][next.x] != soul.now_golem) {
+			if (map[next.y][next.x] != cur.now_golem) {
 				// 내 출구다
-				if (map[next.y][next.x] == EXIT - soul.now_golem) {
+				if (map[next.y][next.x] == EXIT - cur.now_golem) {
 					// 간다
 					visited[next.y][next.x] = visited[cur.y][cur.x] + 1;
-					next.now_golem = map[next.y][next.x];
 					q.push(next);
 				}
 				// 넘의 출구다
 				else if (map[next.y][next.x] > 1000) {
 					// 현재가 내출구면 간다
-					if (map[cur.y][cur.x] == EXIT - soul.now_golem) {
+					if (map[cur.y][cur.x] == EXIT - cur.now_golem) {
 						visited[next.y][next.x] = visited[cur.y][cur.x] + 1;
 						next.now_golem = 9999 - map[next.y][next.x];
 						q.push(next);
@@ -123,7 +122,7 @@ void MoveSoul(Golem golem) {
 				// 그냥 다른 골렘이다
 				else {
 					// 현재가 내 출구면 간다
-					if (map[cur.y][cur.x] == cur.now_golem) {
+					if (map[cur.y][cur.x] == EXIT - cur.now_golem) {
 						visited[next.y][next.x] = visited[cur.y][cur.x] + 1;
 						next.now_golem = map[next.y][next.x];
 						q.push(next);
@@ -144,7 +143,7 @@ Golem MoveGolem(Golem golem, int num) {
 	int flag = false;
 	Golem cur = golem;
 	Golem next;
-	
+
 	while (true)
 	{
 		flag = false;
@@ -164,7 +163,7 @@ Golem MoveGolem(Golem golem, int num) {
 				if (CheckThree(next, DOWN)) {
 					cur = next;
 					// 출구 방향 조정
-					cur.exit_dir = (cur.exit_dir - 1 + 4) % 4;
+					cur.exit_dir = (next.exit_dir - 1 + 4) % 4;
 					flag = true;
 				}
 			}
@@ -179,7 +178,7 @@ Golem MoveGolem(Golem golem, int num) {
 				if (CheckThree(next, DOWN)) {
 					cur = next;
 					// 출구 방향 조정
-					cur.exit_dir = (cur.exit_dir + 1) % 4;
+					cur.exit_dir = (next.exit_dir + 1) % 4;
 					flag = true;
 				}
 			}
@@ -190,15 +189,24 @@ Golem MoveGolem(Golem golem, int num) {
 	}
 	// 이제 현재 골렘의 위치를 검사해준다
 	// 골렘의 위치가 0이다? 맵 초기화
+	// **************여기서 실수 -> 골렘을 다 검사해줘야함 **********************
 	// ㄱㅊ? -> 맵에 기록
 	// 각 골렘을 구분해줘야 한다
 	// 출구도 구분해줘야 할까?
 	// 출구는 구분 안해도 된다
-	if (cur.y == 0) {
-		memset(map, 0, sizeof(map));
-		cur = { -1,-1,-1 };
+	int ny, nx;
+	for (int d = 0; d < 4; d++)
+	{
+		ny = cur.y + dy[d];
+		nx = cur.x + dx[d];
+		if (ny <= 0 || ny > R || nx <= 0 || nx > C) {
+			memset(map, 0, sizeof(map));
+			cur = { -1,-1,-1 };
+			break;
+		}
 	}
-	else {
+
+	if(cur.y != -1){
 		int ny, nx;
 		map[cur.y][cur.x] = num;
 		for (int d = 0; d < 4; d++)
@@ -234,7 +242,8 @@ void print() {
 	{
 		for (int j = 1; j <= C; j++)
 		{
-			cout << map[i][j] << ' ';
+			if (map[i][j] > 1000) cout << "c ";
+			else cout << map[i][j] << ' ';
 		}
 		cout << '\n';
 	}
@@ -255,7 +264,7 @@ void print_visited() {
 }
 
 int CalcSoul() {
-	for (int i = R; i >= 1; i--){
+	for (int i = R; i >= 1; i--) {
 		for (int j = 1; j <= C; j++)
 		{
 			if (visited[i][j] > 0)
