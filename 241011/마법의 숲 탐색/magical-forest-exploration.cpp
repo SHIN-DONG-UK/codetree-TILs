@@ -4,7 +4,7 @@
 #include <cstring>
 
 #define MAX_N 71 // 좌상단을 (1, 1)로 정의
-#define EXIT 9999
+#define EXIT 99999
 #define RIGHT 1
 #define DOWN 2
 #define LEFT 3
@@ -110,11 +110,11 @@ void MoveSoul(Golem golem) {
 					q.push(next);
 				}
 				// 넘의 출구다
-				else if (map[next.y][next.x] > 1000) {
+				else if (map[next.y][next.x] > 10000) {
 					// 현재가 내출구면 간다
 					if (map[cur.y][cur.x] == EXIT - cur.now_golem) {
 						visited[next.y][next.x] = visited[cur.y][cur.x] + 1;
-						next.now_golem = 9999 - map[next.y][next.x];
+						next.now_golem = EXIT - map[next.y][next.x];
 						q.push(next);
 					}
 					// 아님 못간다
