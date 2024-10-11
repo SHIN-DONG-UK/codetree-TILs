@@ -27,7 +27,7 @@ int dx[4] = { 0,1,0,-1 };
 
 int R, C, K;
 int map[MAX_N + 2][MAX_N];
-int visited[MAX_N][MAX_N];
+int visited[MAX_N + 2][MAX_N];
 vector<Golem> golems;
 int ans;
 
@@ -199,7 +199,7 @@ Golem MoveGolem(Golem golem, int num) {
 	{
 		ny = cur.y + dy[d];
 		nx = cur.x + dx[d];
-		if (ny <= 1 || ny > R + 2 || nx <= 0 || nx > C) {
+		if (ny <= 2 || ny > R + 2 || nx <= 0 || nx > C) {
 			memset(map, 0, sizeof(map));
 			cur = { -1,-1,-1 };
 			break;
