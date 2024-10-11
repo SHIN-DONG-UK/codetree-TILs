@@ -26,7 +26,7 @@ int dy[4] = { -1,0,1,0 };
 int dx[4] = { 0,1,0,-1 };
 
 int R, C, K;
-int map[MAX_N][MAX_N];
+int map[MAX_N + 2][MAX_N];
 int visited[MAX_N][MAX_N];
 vector<Golem> golems;
 int ans;
@@ -57,7 +57,7 @@ void Input() {
 	for (int i = 0; i < K; i++)
 	{
 		cin >> c >> d;
-		golems.push_back({ 0, c, d });
+		golems.push_back({ 1, c, d });
 	}
 }
 
@@ -229,8 +229,8 @@ bool CheckThree(Golem golem, int dir) {
 	{
 		next = { golem.y + dy[d], golem.x + dx[d], golem.exit_dir };
 		if ((dir + 2) % 4 == d) continue;
-		if (next.y > R || next.x <= 0 || next.x > C) return false;
-		if (map[next.y][next.x] != 0) return false;
+		if (next.y > R || next.x <= 0 || next.x > C) return false; // ********** 여기서 실수발생
+		if (map[next.y][next.x] != 0) return false;				   // 맵의 위쪽 y는 검사하면 안된다!
 	}
 
 	return true;
@@ -242,7 +242,7 @@ void print() {
 	{
 		for (int j = 1; j <= C; j++)
 		{
-			if (map[i][j] > 1000) cout << "c ";
+			if (map[i][j] > 10000) cout << "c ";
 			else cout << map[i][j] << ' ';
 		}
 		cout << '\n';
