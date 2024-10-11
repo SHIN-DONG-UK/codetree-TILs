@@ -229,7 +229,7 @@ bool CheckThree(Golem golem, int dir) {
 	{
 		next = { golem.y + dy[d], golem.x + dx[d], golem.exit_dir };
 		if ((dir + 2) % 4 == d) continue;
-		if (next.y < 0 || next.y > R || next.x <= 0 || next.x > C) return false;
+		if (next.y > R || next.x <= 0 || next.x > C) return false;
 		if (map[next.y][next.x] != 0) return false;
 	}
 
