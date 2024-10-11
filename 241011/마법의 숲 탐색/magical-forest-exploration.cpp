@@ -67,14 +67,14 @@ void Simulation() {
 	{
 		Golem golem = MoveGolem(golems[i], num);
 
-		print();
+		//print();
 
 		if (golem.y != -1) {
 			memset(visited, 0, sizeof(visited));
 
 			MoveSoul(golem);
 
-			print_visited();
+			//print_visited();
 
 			ans += CalcSoul();
 
