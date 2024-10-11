@@ -99,7 +99,7 @@ void MoveSoul(Golem golem) {
 		for (int d = 0; d < 4; d++)
 		{
 			next = { cur.y + dy[d], cur.x + dx[d], cur.now_golem};
-			if (next.y <= 0 || next.y > R || next.x <= 0 || next.x > C) continue;
+			if (next.y <= 0 || next.y > R + 2 || next.x <= 0 || next.x > C) continue;
 			if (visited[next.y][next.x] > 0) continue;
 			if (map[next.y][next.x] == 0) continue;
 			if (map[next.y][next.x] != cur.now_golem) {
@@ -199,7 +199,7 @@ Golem MoveGolem(Golem golem, int num) {
 	{
 		ny = cur.y + dy[d];
 		nx = cur.x + dx[d];
-		if (ny <= 0 || ny > R || nx <= 0 || nx > C) {
+		if (ny <= 1 || ny > R + 2 || nx <= 0 || nx > C) {
 			memset(map, 0, sizeof(map));
 			cur = { -1,-1,-1 };
 			break;
@@ -229,7 +229,7 @@ bool CheckThree(Golem golem, int dir) {
 	{
 		next = { golem.y + dy[d], golem.x + dx[d], golem.exit_dir };
 		if ((dir + 2) % 4 == d) continue;
-		if (next.y > R || next.x <= 0 || next.x > C) return false; // ********** 여기서 실수발생
+		if (next.y > R + 2|| next.x <= 0 || next.x > C) return false; // ********** 여기서 실수발생
 		if (map[next.y][next.x] != 0) return false;				   // 맵의 위쪽 y는 검사하면 안된다!
 	}
 
@@ -238,7 +238,7 @@ bool CheckThree(Golem golem, int dir) {
 
 void print() {
 	cout << '\n';
-	for (int i = 1; i <= R; i++)
+	for (int i = 1; i <= R + 2; i++)
 	{
 		for (int j = 1; j <= C; j++)
 		{
@@ -252,7 +252,7 @@ void print() {
 
 void print_visited() {
 	cout << '\n';
-	for (int i = 1; i <= R; i++)
+	for (int i = 1; i <= R + 2; i++)
 	{
 		for (int j = 1; j <= C; j++)
 		{
@@ -264,12 +264,12 @@ void print_visited() {
 }
 
 int CalcSoul() {
-	for (int i = R; i >= 1; i--) {
+	for (int i = R + 2; i >= 1; i--) {
 		for (int j = 1; j <= C; j++)
 		{
 			if (visited[i][j] > 0)
 			{
-				return i;
+				return i-2;
 			}
 		}
 	}
