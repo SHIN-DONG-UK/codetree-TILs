@@ -38,7 +38,9 @@ void Print();
 
 int main() {
 	Input();
+
 	int num, dir;
+
 	for (int i = 0; i < Q; i++)
 	{
 		cin >> num >> dir;
@@ -57,6 +59,7 @@ int main() {
 	}
 
 	cout << ans << '\n';
+
 	return 0;
 }
 
@@ -104,7 +107,9 @@ bool CheckMove(int start_num, int dir) {
 
 	int cur;
 	int ny, nx;
+
 	Knight knight;
+
 	while (!q.empty()) {
 		cur = q.front();
 		q.pop();
@@ -128,13 +133,16 @@ bool CheckMove(int start_num, int dir) {
 				// 
 				// 4. another knight
 				if (knight_map[ny][nx] > 0) {
+					if (visited[knight_map[ny][nx]] == 1)
+						continue;
 					visited[knight_map[ny][nx]] = 1;
 					q.push(knight_map[ny][nx]);
 				}
 			}
 		}
-	}
 
+	}
+	
 	return true;
 }
 
@@ -154,7 +162,7 @@ void MoveKnight(int num, int dir) {
 			{
 				for (int b = knight_arr[i].x; b < knight_arr[i].x + knight_arr[i].w; b++)
 				{
-					if (chess_map[a][b] == 1)
+					if (chess_map[a][b] == HAM)
 						damage++;
 				}
 			}
