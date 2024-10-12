@@ -186,7 +186,7 @@ void MoveKnight(int num, int dir) {
 			}
 		}
 		// 왜 다르지?
-		if (knight_arr[i].k > 0) {
+		else {
 			for (int a = knight_arr[i].y; a < knight_arr[i].y + knight_arr[i].h; a++)
 			{
 				for (int b = knight_arr[i].x; b < knight_arr[i].x + knight_arr[i].w; b++)
