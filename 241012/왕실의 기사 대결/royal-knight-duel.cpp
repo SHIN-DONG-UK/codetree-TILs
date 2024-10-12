@@ -38,6 +38,7 @@ void Print();
 
 int main() {
 	Input();
+	//Print();
 
 	int num, dir;
 
@@ -65,6 +66,14 @@ int main() {
 
 void Input() {
 	cin >> L >> N >> Q;
+	// 외벽작업
+	for (int i = 0; i < L + 2; i++)
+	{
+		chess_map[0][i] = WALL;
+		chess_map[L + 1][i] = WALL;
+		chess_map[i][0] = WALL;
+		chess_map[i][L + 1] = WALL;
+	}
 	for (int i = 1; i <= L; i++)
 	{
 		for (int j = 1; j <= L; j++)
@@ -72,6 +81,7 @@ void Input() {
 			cin >> chess_map[i][j];
 		}
 	}
+
 	int x, y, h, w, k;
 	for (int i = 1; i <= N; i++)
 	{
@@ -87,14 +97,7 @@ void Input() {
 		}
 	}
 
-	// 외벽작업
-	for (int i = 0; i < L+2; i++)
-	{
-		chess_map[0][i] = WALL;
-		chess_map[L + 1][i] = WALL;
-		chess_map[i][0] = WALL;
-		chess_map[i][L + 1] = WALL;
-	}
+	
 
 }
 
@@ -171,18 +174,9 @@ void MoveKnight(int num, int dir) {
 				knight_arr[i].k -= damage;
 				damage_arr[i] += damage;
 			}
-
-			if (knight_arr[i].k > 0) {
-				for (int a = knight_arr[i].y; a < knight_arr[i].y + knight_arr[i].h; a++)
-				{
-					for (int b = knight_arr[i].x; b < knight_arr[i].x + knight_arr[i].w; b++)
-					{
-						knight_map[a][b] = knight_arr[i].num;
-					}
-				}
-			}
 		}
-		else {
+
+		if (knight_arr[i].k > 0) {
 			for (int a = knight_arr[i].y; a < knight_arr[i].y + knight_arr[i].h; a++)
 			{
 				for (int b = knight_arr[i].x; b < knight_arr[i].x + knight_arr[i].w; b++)
