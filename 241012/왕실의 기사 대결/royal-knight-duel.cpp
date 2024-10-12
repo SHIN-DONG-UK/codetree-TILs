@@ -175,18 +175,10 @@ void MoveKnight(int num, int dir) {
 				damage_arr[i] += damage;
 			}
 
-			if (knight_arr[i].k > 0) {
-				for (int a = knight_arr[i].y; a < knight_arr[i].y + knight_arr[i].h; a++)
-				{
-					for (int b = knight_arr[i].x; b < knight_arr[i].x + knight_arr[i].w; b++)
-					{
-						knight_map[a][b] = knight_arr[i].num;
-					}
-				}
-			}
+			
 		}
 		// 왜 다르지?
-		else {
+		if (knight_arr[i].k > 0) {
 			for (int a = knight_arr[i].y; a < knight_arr[i].y + knight_arr[i].h; a++)
 			{
 				for (int b = knight_arr[i].x; b < knight_arr[i].x + knight_arr[i].w; b++)
